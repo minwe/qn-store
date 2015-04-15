@@ -1,0 +1,27 @@
+{
+  "name": "ghost-qn-store",
+  "version": "0.0.1",
+  "description": "Qiniu store for Ghost blog.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Minwe/qn-store.git"
+  },
+  "keywords": [
+    "Ghost",
+    "qiniu",
+    "ghost-store"
+  ],
+  "author": "minwe <hegfirose@gmail.com> (http://csspod.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Minwe/qn-store/issues"
+  },
+  "homepage": "https://github.com/Minwe/qn-store",
+  "dependencies": {
+    "qn": "^1.0.1"
+  }
+}
