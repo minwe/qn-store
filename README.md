@@ -1,6 +1,6 @@
 # Ghost Qiniu Storage
 
-This custom storage module allows you to store media file at [Qiniu](http://www.qiniu.com/) instead of storing at local machine, especially helpful for ghost blog hosted at heroku (no local storage). Will work with version higher than  `0.6.0` of Ghost!
+This [Ghost custom storage module](https://github.com/TryGhost/Ghost/wiki/Using-a-custom-storage-module) allows you to store media file at [Qiniu](http://www.qiniu.com/) instead of storing at local machine. Will work with version higher than  `0.6.0` of Ghost!
 
 ## Installation
 
