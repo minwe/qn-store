@@ -3,10 +3,11 @@
 // # Qiniu storage module for Ghost blog http://ghost.org/
 
 var path = require('path');
-var fs  = require('fs-extra');
+var fs  = require('fs');
 var Promise = require('bluebird');
 var qn = require('qn');
 var moment = require('moment');
+// NOTE: npm version should be `../../core/server/utils`
 var utils = require('../../../core/server/utils');
 
 function QiniuStore(config) {

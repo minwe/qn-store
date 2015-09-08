@@ -1,33 +1,55 @@
 # Ghost Qiniu Storage
 
-
-This custom storage module allows you to store media file at [Qiniu](http://www.qiniu.com/) instead of storing at local machine, especially helpful for ghost blog hosted at heroku (no local storage). Will work with latest version `0.6.0` of Ghost!
+This custom storage module allows you to store media file at [Qiniu](http://www.qiniu.com/) instead of storing at local machine, especially helpful for ghost blog hosted at heroku (no local storage). Will work with version higher than  `0.6.0` of Ghost!
 
 ## Installation
+
+### Via NPM
+
+- **Installation from NPM.**
+  
+  ``` 
+  npm install --save ghost-qn-store
+  ```
+  
+- **Create storage module.**
+  
+  Create `index.js` file with folder path `content/storage/qn-store/index.js` (manually create folder if not exist).
+  
+  ``` javascript
+  'use strict';
+  
+  module.exports = require('ghost-qn-store');
+  
+  ```
+
+### Via Git
 
 In order to replace the storage module, the basic requirements are:
 
 - Create a new folder inside `/content` called `/storage`
+  
 - Clone this repo to `/storage`
-
-  ```
+  
+  ``` 
   cd [path/to/ghost]/content/storage
   git clone https://github.com/Minwe/qn-store.git
   ```
+  
 - Install dependencies
-
-  ```
+  
+  ``` 
   cd qn-store
   npm install
   ```
-
+  
   You can add `qn` to dependencies in Ghost's `package.json`.
 
 ## Configuration
 
 In your `config.js` file, you'll need to add a new `storage` block to whichever environment you want to change:
 
-```js
+``` js
 storage: {
   active: 'qn-store',
   'qn-store': {
