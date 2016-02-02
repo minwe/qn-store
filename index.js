@@ -31,7 +31,7 @@ QiniuStore.prototype.save = function(image) {
       if (err) {
         reject('[' + err.code + '] ' + err.name);
       } else {
-        resolve(result.url)
+        resolve('//' + result.url);
       }
     });
   });
