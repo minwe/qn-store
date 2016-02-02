@@ -7,8 +7,7 @@ var fs  = require('fs');
 var Promise = require('bluebird');
 var qn = require('qn');
 var moment = require('moment');
-// NOTE: npm version should be `../../core/server/utils`
-var utils = require('../../../core/server/utils');
+var utils = require(process.cwd() + '/core/server/utils');
 
 function QiniuStore(config) {
   this.options = config || {};
