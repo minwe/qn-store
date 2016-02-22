@@ -5,9 +5,9 @@
 var path = require('path');
 var fs  = require('fs');
 var Promise = require('bluebird');
-var qn = require('qn');
 var moment = require('moment');
-var utils = require(process.cwd() + '/core/server/utils');
+var qn = require('qn');
+var utils = require(path.join(process.cwd(), 'core/server/utils'));
 
 function QiniuStore(config) {
   this.options = config || {};
