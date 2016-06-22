@@ -11,20 +11,21 @@ var utils = require(path.join(process.cwd(), 'core/server/utils'));
 
 function QiniuStore(config) {
   this.options = config || {};
+  this.client = qn.create(this.options);
 }
 
 // ### Save
 // Saves the image to Qiniu
 // - image is the express image object
 // - returns a promise which ultimately returns the full url to the uploaded image
-QiniuStore.prototype.save = function(image) {
+QiniuStore.prototype.save = function(file) {
+  var client = this.client;
   var _this = this;
 
-  return new Promise(function (resolve, reject) {
-    var client = qn.create(_this.options);
-    var key = _this.getFileKey(image);
+  return new Promise(function(resolve, reject) {
+    var key = _this.getFileKey(file);
 
-    client.upload(fs.createReadStream(image.path), {
+    client.upload(fs.createReadStream(file.path), {
       key: key
     }, function(err, result) {
       if (err) {
@@ -39,23 +40,42 @@ QiniuStore.prototype.save = function(image) {
 // middleware for serving the files
 QiniuStore.prototype.serve = function() {
   // a no-op, these are absolute URLs
-  return function (req, res, next) {
+  return function(req, res, next) {
     next();
   };
 };
 
-QiniuStore.prototype.getFileKey = function(image) {
-  var prefix = moment().format(this.options.filePath || 'YYYY/MM/').
-      replace(/^\//, '');
-  var ext = path.extname(image.name);
-  var name = utils.safeString(path.basename(image.name, ext));
+QiniuStore.prototype.getFileKey = function(file) {
+  var keyOptions = this.options.fileKey;
 
-  return prefix + name + '-' + Date.now() + ext.toLowerCase();
+  if (keyOptions) {
+    var getValue = function(obj) {
+      return typeof obj === 'function' ? obj() : obj;
+    };
+    var ext = path.extname(file.name);
+    var name = path.basename(file.name, ext);
+
+    if (keyOptions.safeString) {
+      name = utils.safeString(name)
+    }
+
+    if (keyOptions.prefix) {
+      name = moment().format(getValue(keyOptions.prefix)).replace(/^\//, '') + name;
+    }
+
+    if (keyOptions.suffix) {
+      name += getValue(keyOptions.suffix)
+    }
+
+    return name + ext.toLowerCase();
+  }
+
+  return null;
 };
 
 /*
 QiniuStore.prototype.exists = function(filename) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     // send key to get image info
     client.stat(filename, function(err, info) {
       if (info) {

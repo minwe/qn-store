@@ -71,7 +71,7 @@ In order to replace the storage module, the basic requirements are:
 
 In your `config.js` file, you'll need to add a new `storage` block to whichever environment you want to change:
 
-``` js
+```javascript
 storage: {
   active: 'qn-store',
   'qn-store': {
@@ -82,7 +82,17 @@ storage: {
     // timeout: 3600000, // default rpc timeout: one hour, optional
     // if your app outside of China, please set `uploadURL` to `http://up.qiniug.com/`
     // uploadURL: 'http://up.qiniu.com/'
-    filePath: 'YYYY/MM/' // default `YYYY/MM/`, will be formated by moment.js, using `[]` to escape
+
+    // file storage key config [optional]
+    // if `fileKey` not set, Qiniu will use `SHA1` of file content as key.
+    fileKey: {
+      safeString: true, // use Ghost safaString util to rename filename, e.g. Chinese to Pinyin
+      prefix: 'YYYY/MM/' // {String | Function} will be formated by moment.js, using `[]` to escape,
+      suffix: '' // {String | Function} string added before file extname.
+    }
+    // take `外面的世界 x.jpg` as example,
+    // applied above options, you will get an URL like below after uploaded:
+    //  http://xx.xx.xx.glb.clouddn.com/2016/06/wai-mian-de-shi-jie-x.jpg
   }
 }
 ```
