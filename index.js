@@ -8,12 +8,16 @@ var Promise = require('bluebird');
 var moment = require('moment');
 var qn = require('qn');
 var utils = require(path.join(process.cwd(), 'core/server/utils'));
+var BaseStore = require('../../../core/server/storage/base');
+var util = require('util');
 
 function QiniuStore(config) {
+  BaseStore.call(this);
   this.options = config || {};
   this.client = qn.create(this.options);
 }
 
+util.inherits(QiniuStore, BaseStore);
 // ### Save
 // Saves the image to Qiniu
 // - image is the express image object
@@ -31,7 +35,7 @@ QiniuStore.prototype.save = function(file) {
       if (err) {
         reject('[' + err.code + '] ' + err.name);
       } else {
-        resolve(result.url)
+        resolve('http://' ＋ result.url)
       }
     });
   });
@@ -71,6 +75,17 @@ QiniuStore.prototype.getFileKey = function(file) {
   }
 
   return null;
+};
+
+QiniuStore.prototype.exists = function () {
+	// Server side will automatically replace the file.
+	return;
+};
+
+QiniuStore.prototype.delete = function (target) {
+	//For backup and security purposes there is no way to delete files
+	//whatever on local or server side through Ghost, please do it manually.
+	return;
 };
 
 /*
