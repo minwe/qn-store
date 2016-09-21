@@ -8,7 +8,7 @@ var Promise = require('bluebird');
 var moment = require('moment');
 var qn = require('qn');
 var utils = require(path.join(process.cwd(), 'core/server/utils'));
-var BaseStore = require('../../../core/server/storage/base');
+var BaseStore = require(path.join(process.env.GHOST_SOURCE,'core/server/storage/base'));
 var util = require('util');
 
 function QiniuStore(config) {
