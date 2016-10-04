@@ -3,13 +3,14 @@
 // # Qiniu storage module for Ghost blog http://ghost.org/
 
 var path = require('path');
-var fs  = require('fs');
+var fs = require('fs');
 var util = require('util');
 var Promise = require('bluebird');
 var moment = require('moment');
 var qn = require('qn');
 var utils = require(path.join(process.cwd(), 'core/server/utils'));
 var BaseStore = require(path.join(process.cwd(), 'core/server/storage/base'));
+var getHash = require('./getHash');
 
 function QiniuStore(config) {
   BaseStore.call(this);
@@ -28,17 +29,15 @@ QiniuStore.prototype.save = function(file) {
   var _this = this;
 
   return new Promise(function(resolve, reject) {
-    var key = _this.getFileKey(file);
-
-    client.upload(fs.createReadStream(file.path), {
-      key: key
-    }, function(err, result) {
-      if (err) {
-        reject('[' + err.code + '] ' + err.name);
-      } else {
-        resolve(result.url)
-      }
-    });
+    _this.getFileKey(file).then((function(key) {
+      client.upload(fs.createReadStream(file.path), {
+        key: key
+      }, function(err, result) {
+        console.log(result);
+        // console.log('[' + err.code + '] ' + err.name);
+        err ? reject(err) : resolve(result.url);
+      });
+    }));
   });
 };
 
@@ -52,35 +51,52 @@ QiniuStore.prototype.serve = function() {
 
 QiniuStore.prototype.getFileKey = function(file) {
   var keyOptions = this.options.fileKey;
+  var fileKey = null;
 
   if (keyOptions) {
     var getValue = function(obj) {
       return typeof obj === 'function' ? obj() : obj;
     };
     var ext = path.extname(file.name);
-    var name = path.basename(file.name, ext);
-
-    if (keyOptions.safeString) {
-      name = utils.safeString(name)
-    }
+    var basename = path.basename(file.name, ext);
+    var prefix = '';
+    var suffix = '';
+    var extname = '';
 
     if (keyOptions.prefix) {
-      name = moment().format(getValue(keyOptions.prefix)).replace(/^\//, '') + name;
+      prefix = moment().format(getValue(keyOptions.prefix)).replace(/^\//, '');
     }
 
     if (keyOptions.suffix) {
-      name += getValue(keyOptions.suffix)
+      suffix = getValue(keyOptions.suffix)
     }
 
-    return name + ext.toLowerCase();
+    if (keyOptions.extname !== false) {
+      extname = ext.toLowerCase();
+    }
+
+    var contactKey = function(name) {
+      return prefix + name + suffix + extname;
+    };
+
+    if (keyOptions.hashAsBasename) {
+      return getHash(file).then(function(hash) {
+        return contactKey(hash);
+      });
+    } else if (keyOptions.safeString) {
+      basename = utils.safeString(name);
+    }
+
+    fileKey = contactKey(basename);
   }
 
-  return null;
+  return Promise.resolve(fileKey);
 };
 
 
 // don't need it in Qiniu
 // @see https://support.qiniu.com/hc/kb/article/112817/
+// TODO: if fileKey option set, should use key to check file whether exists
 QiniuStore.prototype.exists = function(filename) {
   return new Promise(function(resolve, reject) {
     resolve(false);
@@ -95,20 +111,20 @@ QiniuStore.prototype.delete = function(fileName, targetDir) {
 };
 
 /*
- QiniuStore.prototype.exists = function(filename) {
- return new Promise(function(resolve, reject) {
- // send key to get image info
- client.stat(filename, function(err, info) {
- if (info) {
- resolve(true);
- } else if  (err && err.code === 612) { // File not exists
- resolve(false);
- } else {
- reject('Can\'t get file info.');
- }
- });
- });
- };
- */
+QiniuStore.prototype.exists = function(filename) {
+  return new Promise(function(resolve, reject) {
+    // send key to get image info
+    client.stat(filename, function(err, info) {
+      if (info) {
+        resolve(true);
+      } else if (err && err.code === 612) { // File not exists
+        resolve(false);
+      } else {
+        reject('Can\'t get file info.');
+      }
+    });
+  });
+};
+*/
 
 module.exports = QiniuStore;

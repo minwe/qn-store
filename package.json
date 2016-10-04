@@ -1,6 +1,6 @@
 {
   "name": "ghost-qn-store",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Qiniu store for Ghost blog.",
   "main": "index.js",
   "scripts": {

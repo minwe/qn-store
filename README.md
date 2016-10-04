@@ -86,9 +86,12 @@ storage: {
     // file storage key config [optional]
     // if `fileKey` not set, Qiniu will use `SHA1` of file content as key.
     fileKey: {
+      // use Qiniu hash as file basename, if set, `safeString` will be ignored
+      hashAsBasename: false,
       safeString: true, // use Ghost safaString util to rename filename, e.g. Chinese to Pinyin
-      prefix: 'YYYY/MM/' // {String | Function} will be formated by moment.js, using `[]` to escape,
-      suffix: '' // {String | Function} string added before file extname.
+      prefix: 'YYYY/MM/', // {String | Function} will be formated by moment.js, using `[]` to escape,
+      suffix: '', // {String | Function} string added before file extname.
+      extname: true // keep file's extname
     }
     // take `外面的世界 x.jpg` as example,
     // applied above options, you will get an URL like below after uploaded:
