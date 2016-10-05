@@ -10,7 +10,7 @@ var moment = require('moment');
 var qn = require('qn');
 var utils = require(path.join(process.cwd(), 'core/server/utils'));
 var BaseStore = require(path.join(process.cwd(), 'core/server/storage/base'));
-var getHash = require('./getHash');
+var getHash = require('./lib/getHash');
 
 function QiniuStore(config) {
   BaseStore.call(this);
