@@ -84,7 +84,7 @@ QiniuStore.prototype.getFileKey = function(file) {
         return contactKey(hash);
       });
     } else if (keyOptions.safeString) {
-      basename = utils.safeString(name);
+      basename = utils.safeString(basename);
     }
 
     fileKey = contactKey(basename);
