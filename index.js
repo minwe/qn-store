@@ -1,130 +1,197 @@
+/**
+ * Qiniu storage module for Ghost blog 1.x
+ * @see https://docs.ghost.org/v1.0.0/docs/using-a-custom-storage-module
+ */
+
 'use strict';
 
-// # Qiniu storage module for Ghost blog http://ghost.org/
+const path = require('path');
+const fs = require('fs');
+const util = require('util');
+const Promise = require('bluebird');
+const moment = require('moment');
+const qn = require('qn');
+const StorageBase = require('ghost-storage-base');
 
-var path = require('path');
-var fs = require('fs');
-var util = require('util');
-var Promise = require('bluebird');
-var moment = require('moment');
-var qn = require('qn');
-var utils = require(path.join(process.cwd(), 'core/server/utils'));
-var BaseStore = require(path.join(process.cwd(), 'core/server/storage/base'));
-var getHash = require('./lib/getHash');
+const cwd = process.cwd();
+let ghostRoot;
 
-function QiniuStore(config) {
-  BaseStore.call(this);
-  this.options = config || {};
-  this.client = qn.create(this.options);
+if (fs.existsSync(path.join(cwd, 'core'))) {
+  ghostRoot = cwd;
+} else if (fs.existsSync(path.join(cwd, 'current'))) {
+  // installed via ghost cli
+  ghostRoot = path.join(cwd, 'current');
 }
 
-util.inherits(QiniuStore, BaseStore);
+if (!ghostRoot) {
+  throw new Error('Can not get ghost root path!');
+}
 
-// ### Save
-// Saves the image to Qiniu
-// - image is the express image object
-// - returns a promise which ultimately returns the full url to the uploaded image
-QiniuStore.prototype.save = function(file) {
-  var client = this.client;
-  var _this = this;
+const config = require(path.join(ghostRoot, 'core/server/config'));
+const utils = require(path.join(ghostRoot, 'core/server/utils'));
+const errors = require(path.join(ghostRoot, 'core/server/errors'));
+const i18n = require(path.join(ghostRoot, 'core/server/i18n'));
+const getHash = require('./lib/getHash');
 
-  return new Promise(function(resolve, reject) {
-    _this.getFileKey(file).then((function(key) {
-      client.upload(fs.createReadStream(file.path), {
-        key: key
-      }, function(err, result) {
-        console.log(result);
-        // console.log('[' + err.code + '] ' + err.name);
-        err ? reject(err) : resolve(result.url);
-      });
-    }));
-  });
-};
+class QiniuStore extends StorageBase {
+  constructor(options) {
+    super(options);
 
-// middleware for serving the files
-QiniuStore.prototype.serve = function() {
-  // a no-op, these are absolute URLs
-  return function(req, res, next) {
-    next();
-  };
-};
-
-QiniuStore.prototype.getFileKey = function(file) {
-  var keyOptions = this.options.fileKey;
-  var fileKey = null;
-
-  if (keyOptions) {
-    var getValue = function(obj) {
-      return typeof obj === 'function' ? obj() : obj;
-    };
-    var ext = path.extname(file.name);
-    var basename = path.basename(file.name, ext);
-    var prefix = '';
-    var suffix = '';
-    var extname = '';
-
-    if (keyOptions.prefix) {
-      prefix = moment().format(getValue(keyOptions.prefix)).replace(/^\//, '');
-    }
-
-    if (keyOptions.suffix) {
-      suffix = getValue(keyOptions.suffix)
-    }
-
-    if (keyOptions.extname !== false) {
-      extname = ext.toLowerCase();
-    }
-
-    var contactKey = function(name) {
-      return prefix + name + suffix + extname;
-    };
-
-    if (keyOptions.hashAsBasename) {
-      return getHash(file).then(function(hash) {
-        return contactKey(hash);
-      });
-    } else if (keyOptions.safeString) {
-      basename = utils.safeString(basename);
-    }
-
-    fileKey = contactKey(basename);
+    this.options = options || {};
+    this.client = qn.create(this.options);
+    this.storagePath = config.getContentPath('images');
   }
 
-  return Promise.resolve(fileKey);
-};
+  /**
+   * Saves the image to storage
+   * - image is the express image object
+   * - returns a promise which ultimately returns the full url to the uploaded image
+   *
+   * @param file
+   * @param targetDir
+   * @returns {*}
+   */
+  save(file, targetDir) {
+    const client = this.client;
+    const _this = this;
 
-
-// don't need it in Qiniu
-// @see https://support.qiniu.com/hc/kb/article/112817/
-// TODO: if fileKey option set, should use key to check file whether exists
-QiniuStore.prototype.exists = function(filename) {
-  return new Promise(function(resolve, reject) {
-    resolve(false);
-  });
-};
-
-// not really delete from Qiniu, may be implemented later
-QiniuStore.prototype.delete = function(fileName, targetDir) {
-  return new Promise(function(resolve, reject) {
-    resolve(true);
-  });
-};
-
-/*
-QiniuStore.prototype.exists = function(filename) {
-  return new Promise(function(resolve, reject) {
-    // send key to get image info
-    client.stat(filename, function(err, info) {
-      if (info) {
-        resolve(true);
-      } else if (err && err.code === 612) { // File not exists
-        resolve(false);
-      } else {
-        reject('Can\'t get file info.');
-      }
+    return new Promise(function(resolve, reject) {
+      _this.getFileKey(file).then((function(key) {
+        client.upload(fs.createReadStream(file.path), {
+          key: key
+        }, function(err, result) {
+          console.log('[QiniuStore]', result);
+          // console.log('[' + err.code + '] ' + err.name);
+          err ? reject(err) : resolve(result.url);
+        });
+      }));
     });
-  });
-};
-*/
+  }
+
+  /**
+   * don't need it in Qiniu
+   * @param filename
+   * @param targetDir
+   * @returns {*|bluebird}
+   * @see https://support.qiniu.com/hc/kb/article/112817/
+   * TODO: if fileKey option set, should use key to check file whether exists
+   */
+  exists(filename, targetDir) {
+    return new Promise(function(resolve, reject) {
+      resolve(false);
+    });
+  }
+
+  /*
+  exists(filename) {
+    return new Promise(function(resolve, reject) {
+      // send key to get image info
+      client.stat(filename, function(err, info) {
+        if (info) {
+          resolve(true);
+        } else if (err && err.code === 612) { // File not exists
+          resolve(false);
+        } else {
+          reject('Can\'t get file info.');
+        }
+      });
+    });
+  }*/
+
+  // middleware for serving the files
+  serve() {
+    // a no-op, these are absolute URLs
+    return function(req, res, next) {
+      next();
+    };
+  }
+
+  /**
+   * Not implemented.
+   * @description not really delete from Qiniu, may be implemented later
+   * @param fileName
+   * @param targetDir
+   * @returns {*|bluebird}
+   */
+  delete(fileName, targetDir) {
+    // return Promise.reject('not implemented');
+    return new Promise(function(resolve, reject) {
+      resolve(true);
+    });
+  }
+
+  /**
+   * Reads bytes from disk for a target image
+   * - path of target image (without content path!)
+   *
+   * @param options
+   */
+  read(options) {
+    options = options || {};
+
+    // remove trailing slashes
+    options.path = (options.path || '').replace(/\/$|\\$/, '');
+
+    const targetPath = path.join(this.storagePath, options.path);
+
+    return new Promise(function(resolve, reject) {
+      fs.readFile(targetPath, function(err, bytes) {
+        if (err) {
+          return reject(new errors.GhostError({
+            err: err,
+            message: 'Could not read image: ' + targetPath
+          }));
+        }
+
+        resolve(bytes);
+      });
+    });
+  }
+
+  getFileKey(file) {
+    const keyOptions = this.options.fileKey;
+    let fileKey = null;
+
+    if (keyOptions) {
+      const getValue = function(obj) {
+        return typeof obj === 'function' ? obj() : obj;
+      };
+      const ext = path.extname(file.name);
+      let basename = path.basename(file.name, ext);
+      let prefix = '';
+      let suffix = '';
+      let extname = '';
+
+      if (keyOptions.prefix) {
+        prefix = moment().format(getValue(keyOptions.prefix))
+          .replace(/^\//, '');
+      }
+
+      if (keyOptions.suffix) {
+        suffix = getValue(keyOptions.suffix);
+      }
+
+      if (keyOptions.extname !== false) {
+        extname = ext.toLowerCase();
+      }
+
+      const contactKey = function(name) {
+        return prefix + name + suffix + extname;
+      };
+
+      if (keyOptions.hashAsBasename) {
+        return getHash(file).then(function(hash) {
+          return contactKey(hash);
+        });
+      } else if (keyOptions.safeString) {
+        basename = utils.safeString(basename);
+      }
+
+      fileKey = contactKey(basename);
+    }
+
+    return Promise.resolve(fileKey);
+  }
+}
 
 module.exports = QiniuStore;

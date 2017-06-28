@@ -1,6 +1,8 @@
 # Ghost Qiniu Storage
 
-This [Ghost custom storage module](https://github.com/TryGhost/Ghost/wiki/Using-a-custom-storage-module) allows you to store media file at [Qiniu](http://www.qiniu.com/) instead of storing at local machine. It requires Ghost greater than `0.6.0`!
+This [Ghost custom storage module](https://github.com/TryGhost/Ghost/wiki/Using-a-custom-storage-module) allows you to store media file at [Qiniu](http://www.qiniu.com/) instead of storing at local machine. It requires Ghost greater than `1.x`!
+
+- [Old version for Ghost less than `1.x`](https://github.com/minwe/qn-store/tree/1.x)
 
 ## Installation
 
@@ -14,24 +16,24 @@ This [Ghost custom storage module](https://github.com/TryGhost/Ghost/wiki/Using-
 - Make the storage folder if it doesn't exist yet
 
   ```
-  mkdir content/storage
+  mkdir content/adapters/storage
   ```
 - Copy the module into the right location
 
   ```
-  cp -vR node_modules/ghost-qn-store content/storage/qn-store
+  cp -vR node_modules/ghost-qn-store content/storage/adapters/qn-store
   ```
 
 ### Via Git
 
 In order to replace the storage module, the basic requirements are:
 
-- Create a new folder inside `/content` called `/storage`
+- Create a new folder inside `/content/adapters` called `/storage`
 
 - Clone this repo to `/storage`
 
   ```
-  cd [path/to/ghost]/content/storage
+  cd [path/to/ghost]/content/adapters/storage
   git clone https://github.com/Minwe/qn-store.git
   ```
 
@@ -41,8 +43,6 @@ In order to replace the storage module, the basic requirements are:
   cd qn-store
   npm install
   ```
-
-  You can add `qn` to dependencies in Ghost's `package.json`.
 
 ### The Old way
 
@@ -58,7 +58,7 @@ In order to replace the storage module, the basic requirements are:
   
 - **Create storage module.**
   
-  Create `index.js` file with folder path `content/storage/qn-store/index.js` (manually create folder if not exist).
+  Create `index.js` file with folder path `content/adapters/storage/qn-store/index.js` (manually create folder if not exist).
   
   ``` javascript
   'use strict';
@@ -69,7 +69,29 @@ In order to replace the storage module, the basic requirements are:
 
 ## Configuration
 
-In your `config.js` file, you'll need to add a new `storage` block to whichever environment you want to change:
+In your `config.[env].json` file, you'll need to add a new `storage` block to whichever environment you want to change:
+
+```json
+{
+  // ...
+  "storage": {
+    "active": "qn-store",
+    "qn-store": {
+      "accessKey": "your access key",
+      "secretKey": "your secret key",
+      "bucket": "your bucket name",
+      "origin": "http://xx.xx.xx.glb.clouddn.com",
+      "fileKey": {
+        "safeString": true,
+        "prefix": "YYYYMM/"
+      }
+    }
+  }
+  // ...
+}
+```
+
+More options: 
 
 ```javascript
 storage: {
@@ -89,8 +111,8 @@ storage: {
       // use Qiniu hash as file basename, if set, `safeString` will be ignored
       hashAsBasename: false,
       safeString: true, // use Ghost safaString util to rename filename, e.g. Chinese to Pinyin
-      prefix: 'YYYY/MM/', // {String | Function} will be formated by moment.js, using `[]` to escape,
-      suffix: '', // {String | Function} string added before file extname.
+      prefix: 'YYYY/MM/', // {String} will be formated by moment.js, using `[]` to escape,
+      suffix: '', // {String} string added before file extname.
       extname: true // keep file's extname
     }
     // take `外面的世界 x.jpg` as example,
