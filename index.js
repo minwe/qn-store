@@ -121,30 +121,30 @@ class QiniuStore extends StorageBase {
   }
 
   /**
-   * Reads bytes from disk for a target image
-   * - path of target image (without content path!)
+   * Reads bytes from qn for a target image
    *
    * @param options
    */
   read(options) {
     options = options || {};
 
-    // remove trailing slashes
-    options.path = (options.path || '').replace(/\/$|\\$/, '');
+    const client = this.client;
+    const _this = this;
 
-    const targetPath = path.join(this.storagePath, options.path);
+    const key = options.path.replace(/http([s]?):\/\/([^\/]+)\//,'');
 
-    return new Promise(function(resolve, reject) {
-      fs.readFile(targetPath, function(err, bytes) {
-        if (err) {
+    return new Promise(function(resolve, reject){
+
+      client.download(key, function (err, content, res) {
+        if(err){
           return reject(new errors.GhostError({
             err: err,
-            message: 'Could not read image: ' + targetPath
+            message: 'Could not read image: ' + options.path
           }));
         }
-
-        resolve(bytes);
+        resolve(content);
       });
+
     });
   }
 
