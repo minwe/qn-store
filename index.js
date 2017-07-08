@@ -8,6 +8,7 @@
 const path = require('path');
 const fs = require('fs');
 const util = require('util');
+const urlParse = require('url').parse;
 const Promise = require('bluebird');
 const moment = require('moment');
 const qn = require('qn');
@@ -32,6 +33,7 @@ const utils = require(path.join(ghostRoot, 'core/server/utils'));
 const errors = require(path.join(ghostRoot, 'core/server/errors'));
 const i18n = require(path.join(ghostRoot, 'core/server/i18n'));
 const getHash = require('./lib/getHash');
+const logPrefix = '[QiniuStore]';
 
 class QiniuStore extends StorageBase {
   constructor(options) {
@@ -60,7 +62,7 @@ class QiniuStore extends StorageBase {
         client.upload(fs.createReadStream(file.path), {
           key: key
         }, function(err, result) {
-          console.log('[QiniuStore]', result);
+          console.log(logPrefix, result);
           // console.log('[' + err.code + '] ' + err.name);
           err ? reject(err) : resolve(result.url);
         });
@@ -121,7 +123,7 @@ class QiniuStore extends StorageBase {
   }
 
   /**
-   * Reads bytes from qn for a target image
+   * Reads bytes from Qiniu for a target image
    *
    * @param options
    */
@@ -129,22 +131,19 @@ class QiniuStore extends StorageBase {
     options = options || {};
 
     const client = this.client;
-    const _this = this;
+    const key = urlParse(options.path).pathname.slice(1);
 
-    const key = options.path.replace(/http([s]?):\/\/([^\/]+)\//,'');
-
-    return new Promise(function(resolve, reject){
-
-      client.download(key, function (err, content, res) {
-        if(err){
+    return new Promise(function(resolve, reject) {
+      client.download(key, function(err, content, res) {
+        if (err) {
           return reject(new errors.GhostError({
             err: err,
-            message: 'Could not read image: ' + options.path
+            message: `${logPrefix} Could not read image: ${options.path}`,
           }));
         }
+
         resolve(content);
       });
-
     });
   }
 
