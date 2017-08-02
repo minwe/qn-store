@@ -21,7 +21,7 @@ This [Ghost custom storage module](https://github.com/TryGhost/Ghost/wiki/Using-
 - Copy the module into the right location
 
   ```
-  cp -vR node_modules/ghost-qn-store content/storage/adapters/qn-store
+  cp -vR node_modules/ghost-qn-store content/adapters/storage/qn-store
   ```
 
 ### Via Git
