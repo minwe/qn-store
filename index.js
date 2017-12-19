@@ -30,8 +30,8 @@ if (!ghostRoot) {
 
 const config = require(path.join(ghostRoot, 'core/server/config'));
 const utils = require(path.join(ghostRoot, 'core/server/utils'));
-const errors = require(path.join(ghostRoot, 'core/server/errors'));
-const i18n = require(path.join(ghostRoot, 'core/server/i18n'));
+const errors = require(path.join(ghostRoot, 'core/server/lib/common/errors'));
+const i18n = require(path.join(ghostRoot, 'core/server/lib/common/i18n'));
 const getHash = require('./lib/getHash');
 const logPrefix = '[QiniuStore]';
 
