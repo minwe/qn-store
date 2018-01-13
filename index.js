@@ -29,7 +29,7 @@ if (!ghostRoot) {
 }
 
 const config = require(path.join(ghostRoot, 'core/server/config'));
-const utils = require(path.join(ghostRoot, 'core/server/utils'));
+const security = require(path.join(ghostRoot, 'core/server/lib/security'));
 const errors = require(path.join(ghostRoot, 'core/server/lib/common/errors'));
 const i18n = require(path.join(ghostRoot, 'core/server/lib/common/i18n'));
 const getHash = require('./lib/getHash');
@@ -183,7 +183,7 @@ class QiniuStore extends StorageBase {
           return contactKey(hash);
         });
       } else if (keyOptions.safeString) {
-        basename = utils.safeString(basename);
+        basename = security.string.safe(basename);
       }
 
       fileKey = contactKey(basename);
