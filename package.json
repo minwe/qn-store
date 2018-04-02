@@ -1,6 +1,6 @@
 {
   "name": "ghost-qn-store",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Qiniu store for Ghost blog.",
   "main": "index.js",
   "scripts": {
@@ -22,9 +22,9 @@
   },
   "homepage": "https://github.com/Minwe/qn-store",
   "dependencies": {
-    "bluebird": "3.5.0",
+    "bluebird": "3.5.1",
     "ghost-storage-base": "0.0.1",
-    "moment": "2.18.1",
+    "moment": "2.21.0",
     "qn": "^1.3.0"
   }
 }
