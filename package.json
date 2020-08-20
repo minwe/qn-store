@@ -22,6 +22,8 @@
   },
   "homepage": "https://github.com/Minwe/qn-store",
   "dependencies": {
+    "@tryghost/errors": "^0.2.3",
+    "@tryghost/security": "^0.1.0",
     "bluebird": "3.5.1",
     "ghost-storage-base": "0.0.1",
     "moment": "2.21.0",

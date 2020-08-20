@@ -13,25 +13,8 @@ const Promise = require('bluebird');
 const moment = require('moment');
 const qn = require('qn');
 const StorageBase = require('ghost-storage-base');
-
-const cwd = process.cwd();
-let ghostRoot;
-
-if (fs.existsSync(path.join(cwd, 'core'))) {
-  ghostRoot = cwd;
-} else if (fs.existsSync(path.join(cwd, 'current'))) {
-  // installed via ghost cli
-  ghostRoot = path.join(cwd, 'current');
-}
-
-if (!ghostRoot) {
-  throw new Error('Can not get ghost root path!');
-}
-
-const config = require(path.join(ghostRoot, 'core/server/config'));
-const security = require(path.join(ghostRoot, 'core/server/lib/security'));
-const errors = require(path.join(ghostRoot, 'core/server/lib/common/errors'));
-const i18n = require(path.join(ghostRoot, 'core/server/lib/common/i18n'));
+const errors = require('@tryghost/errors');
+const security = require('@tryghost/security');
 const getHash = require('./lib/getHash');
 const logPrefix = '[QiniuStore]';
 
@@ -41,7 +24,6 @@ class QiniuStore extends StorageBase {
 
     this.options = options || {};
     this.client = qn.create(this.options);
-    this.storagePath = config.getContentPath('images');
   }
 
   /**
