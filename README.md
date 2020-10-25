@@ -81,6 +81,7 @@ In your `config.[env].json` file, you'll need to add a new `storage` block to wh
       "secretKey": "your secret key",
       "bucket": "your bucket name",
       "origin": "http://xx.xx.xx.glb.clouddn.com",
+      "uploadURL": "up-z2.qiniup.com",
       "fileKey": {
         "safeString": true,
         "prefix": "YYYYMM/"
@@ -100,10 +101,13 @@ storage: {
     accessKey: 'your access key',
     secretKey: 'your secret key',
     bucket: 'your bucket name',
+    // bucket domain
     origin: 'http://xx.xx.xx.glb.clouddn.com',
     // timeout: 3600000, // default rpc timeout: one hour, optional
-    // if your app outside of China, please set `uploadURL` to `http://up.qiniug.com/`
-    // uploadURL: 'http://up.qiniu.com/'
+
+    // uploadURL is related with bucket
+    // see: https://developer.qiniu.com/kodo/manual/1671/region-endpoint
+    uploadURL: 'up-z2.qiniup.com',
 
     // file storage key config [optional]
     // if `fileKey` not set, Qiniu will use `SHA1` of file content as key.
@@ -121,6 +125,10 @@ storage: {
   }
 }
 ```
+
+## FAQS
+
+- [Image optimisation](https://ghost.org/docs/concepts/config/#image-optimisation)
 
 ## License
 
