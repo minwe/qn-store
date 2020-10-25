@@ -7,7 +7,6 @@
 
 const path = require('path');
 const fs = require('fs');
-const util = require('util');
 const urlParse = require('url').parse;
 const Promise = require('bluebird');
 const moment = require('moment');
@@ -22,6 +21,9 @@ if (fs.existsSync(path.join(cwd, 'core'))) {
 } else if (fs.existsSync(path.join(cwd, 'current'))) {
   // installed via ghost cli
   ghostRoot = path.join(cwd, 'current');
+} else if (fs.existsSync(path.join(cwd, 'node_modules/ghost'))) {
+  // run via require('ghost')
+  ghostRoot = path.join(cwd, 'node_modules/ghost');
 }
 
 if (!ghostRoot) {
