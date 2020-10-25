@@ -7,7 +7,6 @@
 
 const path = require('path');
 const fs = require('fs');
-const util = require('util');
 const urlParse = require('url').parse;
 const Promise = require('bluebird');
 const moment = require('moment');
@@ -15,6 +14,7 @@ const qn = require('qn');
 const StorageBase = require('ghost-storage-base');
 const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
+
 const getHash = require('./lib/getHash');
 const logPrefix = '[QiniuStore]';
 
